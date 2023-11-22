@@ -14,7 +14,6 @@
   },
   "keywords": [
     "NodeJS",
-    "ExpressJS",
     "socket.io"
   ],
   "author": "toannguyenit239@gmail.com",
@@ -26,8 +25,6 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "helmet": "^7.1.0",
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
