@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 
 const server = createServer();
 
-server.listen(port, hostname, () => {
+server.listen(port, () => {
   console.log(
     `Server listening on port ${port}!\nDevelopment: http://${hostname}:${port}`
   );
@@ -128,5 +128,3 @@ io.on("connection", (socket) => {
   });
   console.log(socket.rooms);
 });
-
-io.listen(port);
