@@ -62,12 +62,13 @@ io.on("connection", (socket) => {
 
       myPostNotificationRooms.forEach((element) => {
         socket.join(`my-post-${element}`);
+        console.log(`${accountId} joined my-post-${element}`);
       });
 
       // newPostOfFollowingNotificationRooms is an array of the account's following's post notification rooms [accountId1, accountId2, accountId3, ...]
       newPostOfFollowingNotificationRooms.forEach((element) => {
         socket.join(`my-following-${element}`);
-        console.log(`my-following-${element}`);
+        console.log(`${accountId} joined my-following-${element}`);
       });
     }
   );
@@ -77,7 +78,10 @@ io.on("connection", (socket) => {
     "send-notification-new-comment",
     ({ postId, commentId, commenter }) => {
       // data { "postId": postId, "commentId": commentId }
-      console.log(postId, commentId);
+      console.log(
+        `You (${accountId}) received new comment with ${commentId} in post (${postId}) from account(${commenter})`
+      );
+
       // Send the comment to the post notification room of the post
       socket
         .to(`my-post-${postId}`)
@@ -91,6 +95,9 @@ io.on("connection", (socket) => {
     ({ accountId, postId }) => {
       // data { "accountId": accountId, "postId": postId }
       // Send the post to the following's post notification room of the following
+      console.log(
+        `You (${accountId}) received new post (${postId}) from account(${accountId})`
+      );
       socket
         .to(`my-following-${accountId}`)
         .emit("get-notification-new-post-of-following", { accountId, postId });
@@ -101,6 +108,7 @@ io.on("connection", (socket) => {
   socket.on("send-notification-new-follower", ({ accountId, followerId }) => {
     // data { "accountId": accountId, "followerId": followerId }
     console.log(accountId, followerId);
+    console.log(`You (${followerId}) received new follower (${accountId})`);
     // Send the follower to the account's notification room
     socket
       .to(`account-${followerId}`)
@@ -109,8 +117,11 @@ io.on("connection", (socket) => {
 
   // Event when the accoutn unfollows a following
   socket.on("send-notification-unfollow", ({ followingId }) => {
-    // data { "accountId": accountId, "followingId": followingId }
+    // data { "followingId": followingId }
     // Send the unfollowing to the account's notification room
+    console.log(
+      `You (${accountId}) unfollowed (${followingId}) - leave room my-following-${followingId}`
+    );
     socket.leave(`my-following-${followingId}`);
   });
 
@@ -118,6 +129,9 @@ io.on("connection", (socket) => {
   socket.on("send-notification-delete-post", ({ postId }) => {
     // data { "postId": postId }
     // Send the deleted post to the account's notification room
+    console.log(
+      `You (${accountId}) deleted post (${postId}) - leave room my-post-${postId}`
+    );
     socket.leave(`my-post-${postId}`);
   });
 
