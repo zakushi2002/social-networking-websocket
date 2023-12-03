@@ -18,12 +18,21 @@ const io = new Server(server, {
 });
 
 let accountsOnline = [];
-
+let users = [];
 const addUser = (accountId, socketId) => {
   !accountsOnline.some((account) => account.accountId === accountId) &&
     accountsOnline.push({ accountId, socketId });
 };
-
+const addUserOnline = (accountId, socketId) => {
+  !users.some((account) => account.accountId === accountId) &&
+    users.push({ accountId, socketId });
+};
+const removeUserOnline = (socketId) => {
+  users = users.filter((account) => account.socketId !== socketId);
+};
+const getUserOnline = (accountId) => {
+  return users.find((account) => account.accountId === accountId);
+};
 const removeUser = (socketId) => {
   accountsOnline = accountsOnline.filter(
     (account) => account.socketId !== socketId
@@ -120,9 +129,9 @@ io.on("connection", (socket) => {
     socket.leave(`my-post-${postId}`);
   });
   //take userId and socketId from user
-  socket.on("addUser", (userId) => {
-    addUser(userId, socket.id);
-    io.emit("getUsers", accountsOnline);
+  socket.on("addUserOnline", (userId) => {
+    addUserOnline(userId, socket.id);
+    io.emit("getUsersOnline", users);
   });
   //send and get message
   socket.on(
@@ -136,7 +145,7 @@ io.on("connection", (socket) => {
       createdDate,
       modifiedDate,
     }) => {
-      const user = getUser(id);
+      const user = getUserOnline(id);
       io.to(user.socketId).emit("getMessage", {
         senderId,
         id,
@@ -153,6 +162,8 @@ io.on("connection", (socket) => {
   socket.on("disconnect", (reason) => {
     console.log(`socket ${socket.id} disconnected due to ${reason}`);
     removeUser(socket.id);
+    removeUserOnline(socket.id);
+    io.emit("getUsersOnline", users);
   });
   console.log(socket.rooms);
 });
