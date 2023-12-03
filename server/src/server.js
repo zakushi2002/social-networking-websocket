@@ -24,7 +24,7 @@ const addUser = (accountId, socketId) => {
     accountsOnline.push({ accountId, socketId });
 };
 
-const removeUser = (accountId, socketId) => {
+const removeUser = (socketId) => {
   accountsOnline = accountsOnline.filter(
     (account) => account.socketId !== socketId
   );
@@ -52,7 +52,6 @@ io.on("connection", (socket) => {
     `online`,
     `Hello ${accountId}! You are in the room ${accountId}!`
   );
-
   socket.on(
     "join-notification-room",
     ({ myPostNotificationRooms, newPostOfFollowingNotificationRooms }) => {
@@ -120,11 +119,40 @@ io.on("connection", (socket) => {
     // Send the deleted post to the account's notification room
     socket.leave(`my-post-${postId}`);
   });
+  //take userId and socketId from user
+  socket.on("addUser", (userId) => {
+    addUser(userId, socket.id);
+    io.emit("getUsers", accountsOnline);
+  });
+  //send and get message
+  socket.on(
+    "sendMessage",
+    ({
+      senderId,
+      id,
+      content,
+      conversationId,
+      status,
+      createdDate,
+      modifiedDate,
+    }) => {
+      const user = getUser(id);
+      io.to(user.socketId).emit("getMessage", {
+        senderId,
+        id,
+        content,
+        conversationId,
+        status,
+        createdDate,
+        modifiedDate,
+      });
+    }
+  );
 
   // Account disconnected due to reason
   socket.on("disconnect", (reason) => {
     console.log(`socket ${socket.id} disconnected due to ${reason}`);
-    removeUser(accountId, socket.id);
+    removeUser(socket.id);
   });
   console.log(socket.rooms);
 });
