@@ -105,14 +105,16 @@ io.on("connection", (socket) => {
   );
 
   // Event new follower of the account
-  socket.on("send-notification-new-follower", ({ accountId, followerId }) => {
+  socket.on("send-notification-new-follower", (data) => {
     // data { "accountId": accountId, "followerId": followerId }
-    console.log(accountId, followerId);
-    console.log(`You (${followerId}) received new follower (${accountId})`);
+    console.log(data);
+    console.log(
+      `You (${data?.followerId}) received new follower (${data?.accountId})`
+    );
     // Send the follower to the account's notification room
     socket
-      .to(`account-${followerId}`)
-      .emit("get-notification-new-follower", { accountId, followerId });
+      .to(`account-${data?.followerId}`)
+      .emit("get-notification-new-follower", data);
   });
 
   // Event when the accoutn unfollows a following
