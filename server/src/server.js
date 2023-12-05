@@ -44,7 +44,7 @@ io.on("connection", (socket) => {
   // Add the account to the list of accounts online
   addUser(accountId, socket.id);
   // Count the number of accounts online
-  console.log(accountsOnline.length);
+  console.log(`Current accounts online: ${accountsOnline.length}`);
   // Join the room with the account's accountId
   socket.join(`account-${accountId}`);
   // Send a notification of the account's online status to the account
@@ -115,6 +115,19 @@ io.on("connection", (socket) => {
     socket
       .to(`account-${data?.followerId}`)
       .emit("get-notification-new-follower", data);
+  });
+
+  // Event new reaction on a post of the account that except the account itself
+  socket.on("send-notification-new-reaction-post", (data) => {
+    // data { "postId": postId, "reactionId": reactionId }
+    console.log(
+      `You (${data?.accountId}) received new reaction post with ${data?.reactionId} in post (${data?.postId}) from account(${data?.reactor})`
+    );
+
+    // Send the reaction to the post notification room of the post
+    socket
+      .to(`my-post-${data?.postId}`)
+      .emit("get-notification-new-reaction-post", data);
   });
 
   // Event when the accoutn unfollows a following
